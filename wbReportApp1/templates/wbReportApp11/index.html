@@ -1,0 +1,134 @@
+<!DOCTYPE utf-8>
+<html>
+    <head>
+        <title>Обработка детализации ВБ</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            body{
+              background-color: #ffffff; 
+              font-size: 15pt;
+              color: #000000; 
+              
+            }
+            .headerRow{
+                background-color: #000000;
+                border-radius: 10px;
+                border: 5px solid  #000000;
+                color: #ffffff;
+            }
+            .processingResults{
+                margin: auto;
+                width: 90%;
+            }
+            .article{
+                font-size: 18pt;
+                font-weight: 500;
+                border: #000000 2px solid;
+            }
+            .productReportCard{
+                border: 2px solid #000000;
+                border-radius: 5px;
+                padding-bottom: 1%;
+            }
+
+            .productReportCard li{
+                list-style: none;
+            }
+
+            .numberVal{
+                font-weight: 600;
+                font-size: 18pt;
+            }
+
+            .resultsButton, .resultsButtonSelected{
+                background-color: #ffffff;
+                border: #000000 solid 2px;
+                color: #000000;
+                border-radius: 10px;
+                font-size: 15pt;
+                margin: 0;
+                margin-bottom: 2%;
+                padding: 1%;
+            }
+
+            .resultsButton:hover{
+                background-color: #000000;
+                border: #ffffff solid 2px;
+                color: #ffffff;
+            }
+
+            .resultsButtonSelected, .resultsButton:hover{
+                background-color: #000000;
+                border: #ffffff solid 2px;
+                color: #ffffff;
+            }
+
+            form{
+                border-radius: 10px;
+                border: 5px solid  #000000;
+                width: 40%;
+                padding: 1%;
+            }
+
+            form input{
+                font-size: 15pt;
+                border: 3px solid #7d7d7d;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="headerRow">
+            <h2>WB Report 1.0</h2>
+        </div>
+        <h3>Заполните форму для обработки детализации ВБ за неделю</h3>
+        
+        <form method="POST"  action = "{% url 'parseWB' %}" enctype="multipart/form-data">
+            {% csrf_token%}
+            Файл детализации отчёта
+            <input class="resultsButtonSelected" style="width:50%;" type="file" name="uploadedFile" accept="xlsx" /><br><br>
+            Расход на хранение за неделю
+            <input type="text" name="warehouseCost" placeholder="например 11000₽"><br><br>
+            <button type="submit" class="resultsButtonSelected">Отправить</button>
+        </form>
+
+        После обработки детализации по продажам на ВБ за неделю
+        По каждой позиции получите информацию о:
+
+        <ul>
+            <li>Кол-во продаж</li>
+            <li>Средняя цена реализации потребителю</li>
+            <li>Сумму реализации продукции</li>
+            <li>Сумму за вычетом комиссии ВБ и расходов поверенного</li>
+            <li>Вознаграждение ВБ с НДС</li> <!--Общее-->
+            <li>Расходы на логистику</li> <!--Общее-->
+            <li>Расходы поверенного</li> <!--Общее-->
+            <li>Расходы на хранение</li> <!--Общее-->
+        </ul>
+
+        {% block reportResults %}
+
+        {% endblock %}
+        
+    <script>
+        
+        function resultsBlockDisplayer(clickedeBtn){
+
+            for (var b of document.getElementsByClassName('blockButtons')){
+                b.className = 'blockButtons resultsButton'
+            }
+            clickedeBtn.className = 'blockButtons resultsButtonSelected' 
+
+            for (var d of document.getElementsByClassName('processingResults')){
+                d.style.display = "none"
+            }
+
+            document.getElementById(clickedeBtn.getAttribute('data-targetBlock')).style.display = "block";
+
+        }
+
+    </script>
+
+
+    </body>
+</html>
