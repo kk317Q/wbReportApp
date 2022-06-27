@@ -6,6 +6,9 @@ def index(request):
     contextForTemplate = {}
     return render(request, 'wbReportApp11/index.html', contextForTemplate)
 
+def abs5(x):
+    return (x*x)**0.5
+
 def formInitialTable(wbSheet):
 
     temporarTable = []
@@ -24,6 +27,7 @@ def processReportWB(newReportTableK, wbSheet, sales_returns):
     wbComission = 0
     logistics = 0
     logisticsPVZ = 0
+    totalRealized = 0
     totalToSupplier = 0 #До вычета логистики, но после комиссии и поверенного
     dateOfReport =  wbSheet['AF2'].value
     
@@ -38,9 +42,10 @@ def processReportWB(newReportTableK, wbSheet, sales_returns):
 
                 wbComission += float(wbSheet['W'+str(r)].value) + float(wbSheet['X'+str(r)].value) #Комиссия ВБ с НДС общая по неделе
                 logisticsPVZ += float(wbSheet['V'+str(r)].value) #Добавляем поверенного
-                totalToSupplier +=  float(wbSheet['AI'+str(r)].value)
+                totalRealized += round(float(wbSheet['O'+str(r)].value), 2)
+                totalToSupplier +=  round(float(wbSheet['AI'+str(r)].value), 2)
             elif wbSheet['F'+str(r)].value == positionRow[0] and wbSheet['AD'+str(r)].value == "Логистика":
-                logistics += float(wbSheet['AL'+str(r)].value) #Общая логистика с поверенным и ТК, без хранения
+                logistics += float(wbSheet['AL'+str(r)].value) #Общая логистика без поверенным и ТК, без хранения
                 
     for positionRow in newReportTableK:
         print("Отчёт по " + sales_returns)
@@ -50,12 +55,12 @@ def processReportWB(newReportTableK, wbSheet, sales_returns):
         print("Перевести: " + str(positionRow[3]))
         print("Ср. цена: " + str(positionRow[4]))
         print("/////////////////////////////////")
-    
+    '''
     wbComission = round(wbComission, 2)
-    logistics = round(logistics, 2)
+    logistics = round(logistics, 2) 
     logisticsPVZ = round(logisticsPVZ, 2)
-    totalToSupplier = round(totalToSupplier, 2)
-    
+    totalToSupplier = round(totalToSupplier, 2) - logisticsPVZ - logistics - wbComission 
+    '''
     print(wbComission)
     print(logistics)
     print(logisticsPVZ)
@@ -64,7 +69,7 @@ def processReportWB(newReportTableK, wbSheet, sales_returns):
     print("===============")
     print(totalToSupplier-logistics-logisticsPVZ - wbComission)
     
-    return [newReportTableK, wbComission, logistics, logisticsPVZ, totalToSupplier, dateOfReport]
+    return [newReportTableK, wbComission, logistics, logisticsPVZ, totalToSupplier, dateOfReport, totalRealized]
 
 
 def processReturnMergeWB(newReportTable, newReportTableReturns):
@@ -116,17 +121,18 @@ def parseWB(request):
     #    0          1               2                           3                            4
     # Article | Qty Sold | Realized price sum | Revenue after comission and Pover | Average sold price
     newReportTable = temporarDataArray[0]
-    wbComission = round(temporarDataArray[1], 2) #With NDS
+    wbComission = temporarDataArray[1] #With NDS
     warehouseCost = round(float(request.POST['warehouseCost'].replace(',', '.').replace(' ', '')),2)
-    logistics = round(temporarDataArray[2]+temporarDataArray[3] + warehouseCost, 2) #Logistics + Pover + input warehouse cost
-    totalToSupplier = round(temporarDataArray[4], 2)
+  #  logistics = temporarDataArray[2]+temporarDataArray[3] + warehouseCost #Logistics + Pover + input warehouse cost
+   
     dateOfReport = temporarDataArray[5]
 
     newReportTableReturns = temporarDataArrayReturns[0]
     wbComissionWReturns = temporarDataArray[1] - temporarDataArrayReturns[1] #With NDS
     logisticsWReturns = temporarDataArray[2]+temporarDataArray[3] - temporarDataArrayReturns[3] #Logistics + Pover
-    totalToSupplierWReturns = temporarDataArray[4] - temporarDataArrayReturns[4]
-
+    
+    totalRealizedWReturns = temporarDataArray[6] - temporarDataArrayReturns[6]
+    totalToSupplierWReturns = totalRealizedWReturns - logisticsWReturns - wbComissionWReturns - warehouseCost
 
     contextForTemplate = {
         'salesList': newReportTable,
@@ -137,6 +143,8 @@ def parseWB(request):
         'pover': round(temporarDataArray[3] - temporarDataArrayReturns[3], 2),
         'warehouseCost': warehouseCost,
         'dateOfReport': dateOfReport,
+        'totalRealizedWReturns': totalRealizedWReturns,
+        'totalToSupplierWReturns': totalToSupplierWReturns,
         
     }
 
