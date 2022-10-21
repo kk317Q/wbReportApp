@@ -1,0 +1,80 @@
+{% extends "wbReportApp11/index.html" %}
+
+{% block reportResults %}
+
+        <div class="processingResultsContainer">
+        <h4>Результат обработки</h4>
+        Дата: {{dateOfReport}}
+        <button data-targetBlock = 'salesPart' class="blockButtons resultsButtonSelected" onclick="resultsBlockDisplayer(this)">Продажи</button>
+        <button data-targetBlock = 'returnsPart' class="blockButtons resultsButton" onclick="resultsBlockDisplayer(this)">Возвраты</button>
+        <button data-targetBlock = 'mergedParts' class="blockButtons resultsButton" onclick="resultsBlockDisplayer(this)">Общие</button>
+
+
+
+            <!--По каждой позиции-->
+            <div id="salesPart" class="processingResults" style="display:block;">
+                Продажи
+                {% for positionRows in salesList %}
+                <ul class="productReportCard">
+                    <span class="article">Артикул: {{positionRows.0}}</span>
+                    <br><br>
+                    <li>Кол-во продаж: <span class="numberVal">{{positionRows.1}} </span> </li>
+                    <li>Средняя цена реализации потребителю: <span class="numberVal">{{positionRows.4}} ₽</span></li>
+                    <li>Сумму реализации продукции: <span class="numberVal">{{positionRows.2}} ₽</span></li>
+                    <li>Сумму за вычетом комиссии ВБ и расходов поверенного: <span class="numberVal">{{positionRows.3}} ₽</span></li>
+                </ul>
+                {% endfor %}
+                
+               
+            </div>
+            <br>
+
+            <div id="returnsPart" class="processingResults" style="display:none;">
+                Возвраты
+                {% for positionRows in returnsList %}
+                <ul class="productReportCard">
+                    <span class="article">Артикул: {{positionRows.0}}</span>
+                    <br><br>
+                    <li>Кол-во продаж: <span class="numberVal">{{positionRows.1}} </span> </li>
+                    <li>Средняя цена реализации потребителю: <span class="numberVal">{{positionRows.4}} ₽</span></li>
+                    <li>Сумму реализации продукции: <span class="numberVal">{{positionRows.2}} ₽</span></li>
+                    <li>Сумму за вычетом комиссии ВБ и расходов поверенного: <span class="numberVal">{{positionRows.3}} ₽</span></li>
+                </ul>
+                {% endfor %}
+            </div>
+            <br>
+
+            <div id="mergedParts" class="processingResults" style="display:none;">
+                Продажи после возвратов
+                {% for positionRows in mergedList %}
+                <ul class="productReportCard">
+                    <span class="article">Артикул: {{positionRows.0}}</span>
+                    <br><br>
+                    <li>Кол-во продаж: <span class="numberVal">{{positionRows.1}} </span> </li>
+                    <li>Средняя цена реализации потребителю: <span class="numberVal">{{positionRows.4}} ₽</span></li>
+                    <li>Сумму реализации продукции: <span class="numberVal">{{positionRows.2}} ₽</span></li>
+                    <li>Сумму за вычетом комиссии ВБ и расходов поверенного: <span class="numberVal">{{positionRows.3}} ₽</span></li>
+                </ul>
+                {% endfor %}
+            </div>
+            <br>
+
+
+
+            <!--Общие-->
+            <hr>
+            <hr>
+                <li>Реализовано ВБ(С учётом возвратов): {{totalRealizedWReturns}} </li>
+                ==============================================================
+                <li>Вознаграждение ВБ с НДС: {{ wbComissionWReturns }} ₽</li> <!--Общее-->
+                <li>Расходы на логистику: {{logisticsWReturns}} ₽</li> <!--Общее-->
+                <li>Расходы поверенного: {{pover}} ₽</li> <!--Общее-->
+                <li>Расходы на хранение: {{warehouseCost}} ₽</li> <!--Общее-->
+                ==============================================================
+                <li>Перечислено поставщику: {{totalToSupplierWReturns}}</li>
+                <small>с учётом возвратов</small>
+
+        </div>
+
+{% endblock %}
+    

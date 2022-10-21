@@ -3,7 +3,7 @@ from openpyxl import load_workbook
 
 
 def index(request):
-    contextForTemplate = {}
+    contextForTemplate = {}           #reportIndex should be for server
     return render(request, 'wbReportApp11/index.html', contextForTemplate)
 
 def abs5(x):
@@ -16,7 +16,7 @@ def formInitialTable(wbSheet):
 
     for r in range(2, wbSheet.max_row+1):
         #print(wbSheet['F'+str(loopIndex)].value)
-        if wbSheet['F'+str(r)].value not in positionsList:
+        if wbSheet['F'+str(r)].value not in positionsList and wbSheet['F'+str(r)].value != None:
             positionsList.append(wbSheet['F'+str(r)].value)
             temporarTable.append([wbSheet['F'+str(r)].value,0,0,0,0])
     print(sorted(temporarTable))
@@ -31,21 +31,22 @@ def processReportWB(newReportTableK, wbSheet, sales_returns):
     totalToSupplier = 0 #До вычета логистики, но после комиссии и поверенного
     dateOfReport =  wbSheet['AF2'].value
     
-
+    #В этой части и происходит вывод данных из отчёта.
+    #Когда отчёт меняется и сдвигает столбцы, тут нужно корректировки делать.
     for positionRow in newReportTableK:
         for r in range(2, wbSheet.max_row+1):
-            if (wbSheet['F'+str(r)].value == positionRow[0]) and (wbSheet['AD'+str(r)].value == sales_returns or (wbSheet['AD'+str(r)].value == "Сторно продаж" and sales_returns != "Продажа")):
-                positionRow[1] += round(float(wbSheet['M'+str(r)].value), 2) #Кол-во продаж позиции
-                positionRow[2] += round(float(wbSheet['O'+str(r)].value), 2) #Сумма реализации позиции
-                positionRow[3] += round(float(wbSheet['AI'+str(r)].value), 2) #Сумма поставщику позиции
+            if (wbSheet['F'+str(r)].value == positionRow[0]) and (wbSheet['K'+str(r)].value == sales_returns or (wbSheet['K'+str(r)].value == "Сторно продаж" or wbSheet['K'+str(r)].value == "Корректная продажа" and sales_returns != "Продажа")):
+                positionRow[1] += round(float(wbSheet['N'+str(r)].value), 2) #Кол-во продаж позиции
+                positionRow[2] += round(float(wbSheet['P'+str(r)].value), 2) #Сумма реализации позиции
+                positionRow[3] += round(float(wbSheet['AC'+str(r)].value), 2) #Сумма поставщику позиции
                 positionRow[4] =  round(float(positionRow[2])/float(positionRow[1]), 2) #средняя цена реализации позиции
 
-                wbComission += float(wbSheet['W'+str(r)].value) + float(wbSheet['X'+str(r)].value) #Комиссия ВБ с НДС общая по неделе
-                logisticsPVZ += float(wbSheet['V'+str(r)].value) #Добавляем поверенного
-                totalRealized += round(float(wbSheet['O'+str(r)].value), 2)
-                totalToSupplier +=  round(float(wbSheet['AI'+str(r)].value), 2)
-            elif wbSheet['F'+str(r)].value == positionRow[0] and wbSheet['AD'+str(r)].value == "Логистика":
-                logistics += float(wbSheet['AL'+str(r)].value) #Общая логистика без поверенным и ТК, без хранения
+                wbComission += float(wbSheet['AA'+str(r)].value) + float(wbSheet['AB'+str(r)].value) #Комиссия ВБ с НДС общая по неделе
+                logisticsPVZ += float(wbSheet['Z'+str(r)].value) #Добавляем поверенного
+                totalRealized += round(float(wbSheet['P'+str(r)].value), 2)
+                totalToSupplier +=  round(float(wbSheet['AC'+str(r)].value), 2)
+            elif wbSheet['F'+str(r)].value == positionRow[0] and wbSheet['K'+str(r)].value == "Логистика":
+                logistics += float(wbSheet['AF'+str(r)].value) #Общая логистика без поверенным и ТК, без хранения
                 
     for positionRow in newReportTableK:
         print("Отчёт по " + sales_returns)
@@ -177,5 +178,5 @@ def parseWB(request):
         firstPositionRow = False
         maxRow += 1
     '''
-
+    #reportResult must be template
     return render(request, 'wbReportApp11/results.html', contextForTemplate)
